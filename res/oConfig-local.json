@@ -4,9 +4,5 @@
     },
     "composer": {
         "suggestedUser": "admin"
-    },
-    "server" : {
-        "autoConnect": true,
-        "reconnectionShortDelay": 5000
     }
 }
