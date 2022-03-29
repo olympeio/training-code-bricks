@@ -13,7 +13,7 @@ npm run reset
 
 Serve DRAW
 ```
-npm run serve
+npm run serve:draw
 ```
 
 > You may also [work on a remote data cloud instance](#working-on-a-remote-data-cloud-instance).
