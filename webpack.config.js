@@ -1,14 +1,12 @@
 const path = require('path');
+const {IgnorePlugin} = require('webpack');
 const {CleanWebpackPlugin} = require('clean-webpack-plugin');
 const Copy = require('copy-webpack-plugin');
 const {merge} = require('webpack-merge');
 
-const dist = path.join(__dirname, 'dist');
 const drawPath = path.resolve(__dirname, 'node_modules/@olympeio/draw');
 
 const common = {
-    entry: './src/main.js',
-    output: {path: dist, globalObject: 'this'},
     mode: 'development',
     devtool: 'source-map',
     module: {
@@ -30,7 +28,8 @@ const common = {
     },
     resolve: {
         alias: {
-            '@olympeio': path.resolve(__dirname, 'node_modules/@olympeio')
+            '@olympeio': path.resolve(__dirname, 'node_modules/@olympeio'),
+            'olympeio-extensions':   path.resolve(__dirname, 'node_modules/@olympeio-extensions')
         }
     },
     plugins: [
@@ -38,7 +37,8 @@ const common = {
         new Copy({patterns: [
             {from: 'res/version.json', to: 'version.json'}
         ]})
-    ]
+    ],
+    ignoreWarnings: [{message: /Empty results for "import '\.\/bricks\/\*\*\/\*\.js'"/}]
 };
 
 const server = {
@@ -50,7 +50,7 @@ const server = {
             }
         },
         static: {
-            directory: dist
+            directory: path.join(__dirname, 'dist/server')
         },
         devMiddleware: {
             writeToDisk: true
@@ -59,6 +59,9 @@ const server = {
 };
 
 const draw = {
+    entry: './src/main.js',
+    name: 'draw',
+    output: {path: path.join(__dirname, 'dist/draw'), globalObject: 'this'},
     resolve: {
         alias: {olympe: drawPath}
     },
@@ -94,11 +97,18 @@ const drawDist = {
 }
 
 const node = {
+    entry: './src/main-node.js',
+    output: {path: path.join(__dirname, 'dist/node'), globalObject: 'this'},
     target: 'node',
-    output: {path: path.join(__dirname, 'dist-node'), globalObject: 'this'},
     resolve: {
         alias: {olympe: path.resolve(__dirname, 'node_modules/@olympeio/runtime-node')}
-    }
+    },
+    plugins: [new IgnorePlugin({resourceRegExp: /better-sqlite3|tedious|mysql|mysql2|oracledb|pg-native|pg-query-stream|@vscode\/sqlite3/})],
+    ignoreWarnings: [
+        {module: /fast-json-stringify/, message: /Can't resolve 'long'/},
+        {module: /pino/, message: /Can't resolve 'pino-pretty'/},
+        {module: /knex/, message: /Critical dependency: the request of a dependency is an expression/},
+    ]
 };
 const nodeLocal = {
     name: 'node-local',
