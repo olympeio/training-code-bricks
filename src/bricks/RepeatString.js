@@ -13,7 +13,7 @@ export default class RepeatString extends FunctionBrick {
      * @param {function(string)} setRepeatedS
      * @param {function(number)} setLength
      */
-    onUpdate(context, [s, n], [setRepeatedS, setLength]) {
+    update(context, [s, n], [setRepeatedS, setLength]) {
         const repeatedS = s.repeat(n);
         setRepeatedS(repeatedS);
         setLength(repeatedS.length);

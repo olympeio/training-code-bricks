@@ -1,7 +1,7 @@
-import { UIBrick, registerBrick } from 'olympe';
+import { VisualBrick, registerBrick } from 'olympe';
 
 //react imports
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 
 import { Bar } from 'react-chartjs-2';
@@ -10,40 +10,47 @@ import Chart from 'chart.js/auto';
 //RxJS imports
 import {combineLatest} from 'rxjs';
 
-export default class BarChart extends UIBrick {
+export default class BarChart extends VisualBrick {
+
+    /**
+     * @override
+     */
+    setupExecution($) {
+        return combineLatest([
+            $.observe('legend'),
+            $.observe('labels'),
+            $.observe('data')
+        ]);
+    }
+
+    /**
+     * @override
+     */
+    updateParent(parent, element) {
+        ReactDOM.render(element, parent);
+        return () => {
+            ReactDOM.unmountComponentAtNode(parent);
+        };
+    }
 
     /**
      * This method runs when the brick is ready in the HTML DOM.
+     *
      * @override
-     * @param {!UIContext} context
-     * @param {!Element} elementDom
+     * @param {!BrickContext} $
+     * @param {string} legend
+     * @param {string} label
+     * @param {string} data
      */
-    draw(context, elementDom) {
-        combineLatest([
-            context.getProperty('legend').observe(),
-            context.getProperty('labels').observe(),
-            context.getProperty('data').observe()
-        ]).subscribe(([title, labels, data]) => {
-            ReactDOM.render(
-                <ChartRenderer
-                    title={title}
-                    labels={labels.split(',')}
-                    data={data.split(',')}
-                />,
-                elementDom
-            );
-        });
+    render($, [legend, labels, data]) {
+        return (<Bar
+            data={{
+                labels: labels.split(','),
+                datasets: [{label: legend, data: data.split(',')}]
+            }}
+            options={{ maintainAspectRatio: false }}
+        />);
     }
 }
-
-const ChartRenderer = (props) => {
-    return (<Bar
-        data={{
-            labels: props.labels,
-            datasets: [{label: props.title, data: props.data}]
-        }}
-        options={{ maintainAspectRatio: false }}
-    />);
-};
 
 registerBrick('017d6cbc79bf86dad51e', BarChart);
